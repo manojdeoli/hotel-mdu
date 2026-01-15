@@ -253,9 +253,13 @@ function App() {
   const [success, setSuccess] = useState('');
 
   const scanBluetooth = async () => {
+    // Auto-verify if not already verified
     if (!verifiedPhoneNumber) {
-      alert('Please verify your phone number first.');
-      return;
+      const mockPhone = '+61400500800';
+      setVerifiedPhoneNumber(mockPhone);
+      localStorage.setItem('verifiedPhone', mockPhone);
+      setSuccess('Phone number auto-verified for testing.');
+      addMessage('Phone number auto-verified: ' + mockPhone);
     }
 
     addMessage('Opening Bluetooth scanner...');
@@ -275,15 +279,16 @@ function App() {
 
       addMessage(`✅ Connected to: ${device.name}`);
       const zoneName = device.name.toLowerCase();
+      const phoneToUse = verifiedPhoneNumber || '+61400500800';
       
       if (zoneName.includes('entrance')) {
-        handleZoneScan('entrance', verifiedPhoneNumber);
+        handleZoneScan('entrance', phoneToUse);
       } else if (zoneName.includes('checkin') || zoneName.includes('kiosk')) {
-        handleZoneScan('checkin', verifiedPhoneNumber);
+        handleZoneScan('checkin', phoneToUse);
       } else if (zoneName.includes('elevator') || zoneName.includes('lift')) {
-        handleZoneScan('elevator', verifiedPhoneNumber);
+        handleZoneScan('elevator', phoneToUse);
       } else if (zoneName.includes('room') || zoneName.includes('door')) {
-        handleZoneScan('room', verifiedPhoneNumber);
+        handleZoneScan('room', phoneToUse);
       } else {
         addMessage(`⚠️ Unknown device: ${device.name}. Please use a device with "entrance", "checkin", "elevator", or "room" in the name.`);
       }
@@ -707,11 +712,11 @@ function App() {
                 <h2 className="card-header">2. Automated Sequences</h2>
                 <div className="p-3">
                   <div style={{padding: '10px', backgroundColor: '#e7f3ff', borderRadius: '5px', marginBottom: '15px', fontSize: '13px'}}>
-                    <strong>📡 Bluetooth Testing:</strong>
+                    <strong>📡 Bluetooth Testing (No phone verification needed):</strong>
                     <ol style={{margin: '5px 0', paddingLeft: '20px'}}>
                       <li>Install "nRF Connect" app on another phone</li>
                       <li>Create BLE peripheral with name: "Hotel-Entrance", "Hotel-Checkin", "Hotel-Elevator", or "Hotel-Room"</li>
-                      <li>Click "Scan Bluetooth" button below</li>
+                      <li>Click "Scan Bluetooth" button below (will auto-verify phone)</li>
                       <li>Select the device from the list</li>
                     </ol>
                   </div>
