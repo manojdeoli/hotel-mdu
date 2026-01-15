@@ -568,7 +568,7 @@ function App() {
   };
 
   // Check if we should show QR generator
-  if (window.location.pathname === '/qr-codes') {
+  if (window.location.search.includes('qr=true')) {
     return <QRGenerator />;
   }
 
@@ -588,6 +588,7 @@ function App() {
         <div className="artificial-clock">
           {verifiedPhoneNumber && isSequenceRunning && renderCountdown()}
         </div>
+        <a href="?qr=true" style={{ color: 'white', marginLeft: '20px', textDecoration: 'underline' }}>Generate QR Codes</a>
       </header>
 
       <main className="main-content">
