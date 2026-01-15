@@ -252,17 +252,50 @@ function App() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  // QR Code scanning - check URL params on mount
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const zone = params.get('zone');
-    const storedPhone = localStorage.getItem('verifiedPhone');
-    
-    if (zone && storedPhone) {
-      setVerifiedPhoneNumber(storedPhone);
-      handleZoneScan(zone, storedPhone);
+  const scanBluetooth = async () => {
+    if (!verifiedPhoneNumber) {
+      alert('Please verify your phone number first.');
+      return;
     }
-  }, []);
+
+    addMessage('Opening Bluetooth scanner...');
+    addMessage('💡 TIP: Look for devices named "Hotel-Entrance", "Hotel-Checkin", "Hotel-Elevator", or "Hotel-Room"');
+
+    try {
+      if (!navigator.bluetooth) {
+        addMessage('❌ Web Bluetooth not supported. Use Chrome on Android or desktop.');
+        alert('Web Bluetooth is not supported in this browser. Please use Chrome on Android or desktop.');
+        return;
+      }
+
+      const device = await navigator.bluetooth.requestDevice({
+        acceptAllDevices: true,
+        optionalServices: ['battery_service']
+      });
+
+      addMessage(`✅ Connected to: ${device.name}`);
+      const zoneName = device.name.toLowerCase();
+      
+      if (zoneName.includes('entrance')) {
+        handleZoneScan('entrance', verifiedPhoneNumber);
+      } else if (zoneName.includes('checkin') || zoneName.includes('kiosk')) {
+        handleZoneScan('checkin', verifiedPhoneNumber);
+      } else if (zoneName.includes('elevator') || zoneName.includes('lift')) {
+        handleZoneScan('elevator', verifiedPhoneNumber);
+      } else if (zoneName.includes('room') || zoneName.includes('door')) {
+        handleZoneScan('room', verifiedPhoneNumber);
+      } else {
+        addMessage(`⚠️ Unknown device: ${device.name}. Please use a device with "entrance", "checkin", "elevator", or "room" in the name.`);
+      }
+    } catch (err) {
+      if (err.name === 'NotFoundError') {
+        addMessage('ℹ️ No device selected');
+      } else {
+        console.error('Bluetooth scan failed:', err);
+        addMessage(`❌ Bluetooth error: ${err.message}`);
+      }
+    }
+  };
 
   const handleZoneScan = (zone, phoneNumber) => {
     addMessage(`QR Code scanned at ${zone}`);
@@ -673,6 +706,15 @@ function App() {
               <div id="apiActions" className="card">
                 <h2 className="card-header">2. Automated Sequences</h2>
                 <div className="p-3">
+                  <div style={{padding: '10px', backgroundColor: '#e7f3ff', borderRadius: '5px', marginBottom: '15px', fontSize: '13px'}}>
+                    <strong>📡 Bluetooth Testing:</strong>
+                    <ol style={{margin: '5px 0', paddingLeft: '20px'}}>
+                      <li>Install "nRF Connect" app on another phone</li>
+                      <li>Create BLE peripheral with name: "Hotel-Entrance", "Hotel-Checkin", "Hotel-Elevator", or "Hotel-Room"</li>
+                      <li>Click "Scan Bluetooth" button below</li>
+                      <li>Select the device from the list</li>
+                    </ol>
+                  </div>
                   <div className="api-buttons">
                     <button className="btn btn-primary" onClick={handleRegistrationSequence}>Start Registration</button>
                     {checkInStatus !== 'Checked In' && (
@@ -682,34 +724,10 @@ function App() {
                       <button className="btn btn-primary" onClick={handleAccessSequence}>Elevator & Room Access</button>
                       <button className="btn btn-primary" onClick={() => handleStartSequence('departure')}>Checkout</button>
                     </>}
+                    <button className="btn btn-primary" onClick={scanBluetooth} style={{backgroundColor: '#17a2b8'}}>🔵 Scan Bluetooth</button>
                   </div>
                   <div id="response-container" ref={responseContainerRef}>
                     <pre id="api-response">{messages.join('\n')}</pre>
-                  </div>
-                </div>
-              </div>
-
-              {/* QR Codes Section */}
-              <div className="card">
-                <h2 className="card-header">QR Codes for Demo</h2>
-                <div className="p-3">
-                  <p style={{fontSize: '14px', marginBottom: '15px'}}>Scan these QR codes with your phone after verifying your number</p>
-                  <div style={{display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '15px'}}>
-                    {[
-                      {id: 'entrance', name: 'Entrance', emoji: '🏨'},
-                      {id: 'checkin', name: 'Check-in', emoji: '✅'},
-                      {id: 'elevator', name: 'Elevator', emoji: '🛗'},
-                      {id: 'room', name: 'Room', emoji: '🚪'}
-                    ].map(zone => (
-                      <div key={zone.id} style={{border: '1px solid #ddd', padding: '10px', textAlign: 'center', borderRadius: '5px'}}>
-                        <div style={{fontSize: '12px', fontWeight: 'bold', marginBottom: '5px'}}>{zone.emoji} {zone.name}</div>
-                        <img 
-                          src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(window.location.origin + '?zone=' + zone.id)}`}
-                          alt={zone.name}
-                          style={{width: '150px', height: '150px'}}
-                        />
-                      </div>
-                    ))}
                   </div>
                 </div>
               </div>

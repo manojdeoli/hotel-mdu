@@ -18,8 +18,8 @@ async function post(url, body) {
 }
 
 export function verifyPhoneNumber(phoneNumber) {
-    return true
-    //return post(`${API_BASE_URL}/number-verification/number-verification/v0/verify`, { phoneNumber });
+    // Mock verification for testing
+    return Promise.resolve({ devicePhoneNumberVerified: true });
 }
 
 export function kycMatch(data) {
