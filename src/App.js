@@ -281,6 +281,7 @@ function App() {
       const zoneName = device.name.toLowerCase();
       const phoneToUse = verifiedPhoneNumber || '+61400500800';
       
+      // Check for zone keywords
       if (zoneName.includes('entrance')) {
         handleZoneScan('entrance', phoneToUse);
       } else if (zoneName.includes('checkin') || zoneName.includes('kiosk')) {
@@ -289,8 +290,14 @@ function App() {
         handleZoneScan('elevator', phoneToUse);
       } else if (zoneName.includes('room') || zoneName.includes('door')) {
         handleZoneScan('room', phoneToUse);
+      } else if (zoneName.includes('abble')) {
+        // Detected nRF advertiser - show demo for entrance
+        addMessage('🎯 Detected nRF BLE device! Simulating entrance zone...');
+        handleZoneScan('entrance', phoneToUse);
       } else {
-        addMessage(`⚠️ Unknown device: ${device.name}. Please use a device with "entrance", "checkin", "elevator", or "room" in the name.`);
+        addMessage(`⚠️ Unknown device: ${device.name}. Rename device to include "entrance", "checkin", "elevator", or "room"`);
+        addMessage('💡 For testing: Treating this as entrance zone...');
+        handleZoneScan('entrance', phoneToUse);
       }
     } catch (err) {
       if (err.name === 'NotFoundError') {
