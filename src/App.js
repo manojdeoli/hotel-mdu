@@ -58,13 +58,6 @@ const generateRoute = (start, end, sections = 10) => {
 // --- End of Location Simulation Data ---
 
 function App() {
-  // Check if we should show QR generator
-  const showQRGenerator = window.location.pathname === '/qr-codes';
-  
-  if (showQRGenerator) {
-    return <QRGenerator />;
-  }
-
   const mapUpdateThrottle = useRef(null);
   const [verifiedPhoneNumber, setVerifiedPhoneNumber] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -573,6 +566,11 @@ function App() {
       // You might want to set this to false when the sequence is fully complete
     }
   };
+
+  // Check if we should show QR generator
+  if (window.location.pathname === '/qr-codes') {
+    return <QRGenerator />;
+  }
 
   return (
     <div className="App">
