@@ -8,7 +8,6 @@ import iconRetina from 'leaflet/dist/images/marker-icon-2x.png';
 import { format } from 'date-fns';
 import * as api from './api';
 import { formFields } from './formFields';
-import QRGenerator from './QRGenerator';
 
 
 // --- Fix for Leaflet's default icon ---
@@ -567,11 +566,6 @@ function App() {
     }
   };
 
-  // Check if we should show QR generator
-  if (window.location.search.includes('qr=true')) {
-    return <QRGenerator />;
-  }
-
   return (
     <div className="App">
       {isLoading &&
@@ -588,7 +582,6 @@ function App() {
         <div className="artificial-clock">
           {verifiedPhoneNumber && isSequenceRunning && renderCountdown()}
         </div>
-        <a href="?qr=true" style={{ color: 'white', marginLeft: '20px', textDecoration: 'underline' }}>Generate QR Codes</a>
       </header>
 
       <main className="main-content">
@@ -692,6 +685,31 @@ function App() {
                   </div>
                   <div id="response-container" ref={responseContainerRef}>
                     <pre id="api-response">{messages.join('\n')}</pre>
+                  </div>
+                </div>
+              </div>
+
+              {/* QR Codes Section */}
+              <div className="card">
+                <h2 className="card-header">QR Codes for Demo</h2>
+                <div className="p-3">
+                  <p style={{fontSize: '14px', marginBottom: '15px'}}>Scan these QR codes with your phone after verifying your number</p>
+                  <div style={{display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '15px'}}>
+                    {[
+                      {id: 'entrance', name: 'Entrance', emoji: '🏨'},
+                      {id: 'checkin', name: 'Check-in', emoji: '✅'},
+                      {id: 'elevator', name: 'Elevator', emoji: '🛗'},
+                      {id: 'room', name: 'Room', emoji: '🚪'}
+                    ].map(zone => (
+                      <div key={zone.id} style={{border: '1px solid #ddd', padding: '10px', textAlign: 'center', borderRadius: '5px'}}>
+                        <div style={{fontSize: '12px', fontWeight: 'bold', marginBottom: '5px'}}>{zone.emoji} {zone.name}</div>
+                        <img 
+                          src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(window.location.origin + '?zone=' + zone.id)}`}
+                          alt={zone.name}
+                          style={{width: '150px', height: '150px'}}
+                        />
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
